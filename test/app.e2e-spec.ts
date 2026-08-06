@@ -16,11 +16,11 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/api (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api')
       .expect(200)
-      .expect('Hello World!');
+      .expect({ data: 'Hello World!' });
   });
 
   afterEach(async () => {
