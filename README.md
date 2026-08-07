@@ -1,98 +1,157 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# backendpedbox
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST construida con **NestJS** + **TypeORM** + **MySQL** para la prueba técnica de **PedBox**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Consume el JSON de Reddit (`https://www.reddit.com/reddits.json`), lo almacena normalizado en MySQL y lo expone a través de una API REST con **autenticación JWT**.
 
-## Description
+> Documentación: [Historias de usuario](docs/USER_STORIES.md) · [Endpoints y Postman](docs/API.md)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Stack
 
-```bash
-$ npm install
+- **Framework:** NestJS 11 (Node.js / TypeScript)
+- **Base de datos:** MySQL 8
+- **ORM:** TypeORM (`synchronize` en desarrollo)
+- **Autenticación:** JWT (Passport) + bcrypt
+- **Validación:** class-validator / class-transformer
+
+---
+
+## Estructura del proyecto
+
+```
+src/
+├── main.ts                    # Punto de entrada (helmet, CORS, pipes, interceptors)
+├── app.module.ts              # Módulo raíz
+├── config/validation/         # Validación de variables de entorno
+├── database/config/           # Configuración de TypeORM + MySQL
+├── common/                    # Transversales: @Public, interceptor, filtro de errores
+├── auth/                      # Registro de usuarios (entity User + service)
+└── subreddits/                # Ingesta de Reddit, listado y detalle (en desarrollo)
 ```
 
-## Compile and run the project
+Cada feature se organiza por capas: `module/`, `controller/`, `service/`, `entity/`, `dto/`, `test/`.
+
+---
+
+## Requisitos previos
+
+- Node.js ≥ 20
+- MySQL 8 corriendo en `localhost:3306`
+- npm ≥ 9
+
+---
+
+## Instalación
+
+1. Clonar el repositorio e instalar dependencias:
+   ```bash
+   npm install
+   ```
+
+2. Crear la base de datos en MySQL (solo el esquema vacío; las tablas las crea la app):
+   ```sql
+   CREATE DATABASE backendpedbox;
+   ```
+
+3. Copiar el archivo de variables de entorno y ajustarlo:
+   ```bash
+   cp .env.example .env
+   ```
+   Editar `.env` con tus credenciales:
+   ```env
+   NODE_ENV=development
+   PORT=3000
+
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=backendpedbox
+
+   JWT_SECRET=cambia_este_secret_por_uno_seguro
+   JWT_EXPIRES_IN=1d
+
+   REDDIT_JSON_URL=https://www.reddit.com/reddits.json
+   REDDIT_USER_AGENT=backendpedbox/1.0 (por /u/wilsoncap)
+   ```
+
+4. Levantar la aplicación:
+   ```bash
+   npm run start:dev
+   ```
+   La API queda disponible en `http://localhost:3000/api`.
+
+> ⚠️ **Seguridad:** el archivo `.env` está en `.gitignore` y **no** debe subirse al repositorio. Solo se sube `.env.example`.
+
+---
+
+## Scripts
+
+| Comando | Descripción |
+|---|---|
+| `npm run start:dev` | Desarrollo con recarga automática |
+| `npm run start` | Ejecutar compilado |
+| `npm run build` | Compilar TypeScript → `dist/` |
+| `npm run lint` | ESLint (con `--fix`) |
+| `npm run test` | Pruebas unitarias (Jest) |
+| `npm run test:e2e` | Pruebas end-to-end |
+
+---
+
+## Endpoints
+
+| Método | Ruta | Auth | Descripción | Estado |
+|---|---|---|---|---|
+| POST | `/api/auth/register` | — | Crear cuenta | ✅ |
+| POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json | 🔜 |
+| GET | `/api/subreddits` | Bearer | Listar subreddits paginados | 🔜 |
+| GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | 🔜 |
+
+Guía completa de consumo (ejemplos JSON y Postman): [docs/API.md](docs/API.md)
+
+---
+
+## Base de datos
+
+El esquema se crea automáticamente en desarrollo gracias a `synchronize: true`.
+
+**Tabla `users`** (✅):
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | uuid | Clave primaria |
+| `email` | varchar | Único |
+| `password` | varchar | Hash bcrypt |
+| `createdAt` / `updatedAt` | datetime | Timestamps |
+
+**Tabla `subreddits`** (🔜):
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | varchar | id de Reddit |
+| `name` | varchar | Único (`display_name`) |
+| `title` | varchar | — |
+| `publicDescription` / `description` | text | — |
+| `subscribers` | int | — |
+| `url` | varchar | — |
+| `over18` | boolean | — |
+| `createdUtc` | bigint | — |
+| `iconImg` / `bannerImg` | text | — |
+| `fetchedAt` | datetime | Última sincronización |
+
+---
+
+## Pruebas
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run test        # unitarias
+npm run test:e2e    # e2e (requiere MySQL arriba)
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## Notas
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Las credenciales de la BD y el secreto JWT se leen exclusivamente de variables de entorno (`.env`).
+- Los endpoints protegidos requieren `Authorization: Bearer <token>`.
+- Las contraseñas nunca se devuelven en las respuestas ni se guardan en texto plano.
