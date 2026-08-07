@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/module/auth.module';
 import { validate } from './config/validation/env.validation';
 import { typeOrmConfig } from './database/config/typeorm.config';
+import { SubredditsModule } from './subreddits/module/subreddits.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { typeOrmConfig } from './database/config/typeorm.config';
       useFactory: typeOrmConfig,
     }),
     AuthModule,
+    SubredditsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
