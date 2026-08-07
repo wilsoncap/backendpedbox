@@ -20,7 +20,34 @@
 
 ---
 
-## HU-02 · Sincronizar datos de Reddit — 🔜 Pendiente
+## HU-02 · Iniciar sesión (JWT) — ✅ Implementado
+
+**Como** usuario registrado, **quiero** iniciar sesión con mis credenciales, **para** obtener un token JWT y consumir los endpoints protegidos.
+
+**Criterios de aceptación:**
+- [x] `POST /api/auth/login` con credenciales correctas responde `200 OK`.
+- [x] La respuesta incluye `{ "data": { "accessToken", "user" } }` y el `user` nunca incluye el `password`.
+- [x] Con email o password incorrectos responde `401 Unauthorized` (mensaje genérico, sin revelar cuál falló).
+- [x] El token expira según `JWT_EXPIRES_IN` configurado en el `.env`.
+- [x] El token enviado como `Authorization: Bearer <token>` permite acceder a los endpoints protegidos.
+- [x] Los endpoints sin token responde `401 Unauthorized` (guard global JWT).
+- [x] El endpoint es público (no requiere token).
+
+---
+
+## HU-03 · Cerrar sesión (logout) — ✅ Implementado
+
+**Como** usuario autenticado, **quiero** cerrar sesión, **para** invalidar mi token actual y dejar de acceder a los endpoints protegidos.
+
+**Criterios de aceptación:**
+- [x] `POST /api/auth/logout` requiere token; sin token responde `401 Unauthorized`.
+- [x] Con token válido responde `200 OK` con `{ "data": { "message" } }`.
+- [x] El token usado queda **revocado**: reutilizarlo responde `401 Unauthorized`.
+- [x] La revocación dura hasta que el token expire (blacklist en memoria).
+
+---
+
+## HU-04 · Sincronizar datos de Reddit — 🔜 Pendiente
 
 **Como** usuario autenticado, **quiero** ejecutar la sincronización del JSON de Reddit, **para** poblar y mantener actualizados los subreddits en la base de datos.
 
@@ -34,7 +61,7 @@
 
 ---
 
-## HU-03 · Listar subreddits paginados — 🔜 Pendiente
+## HU-05 · Listar subreddits paginados — 🔜 Pendiente
 
 **Como** usuario autenticado, **quiero** ver la lista de subreddits paginada, **para** navegar entre los temas.
 
@@ -46,7 +73,7 @@
 
 ---
 
-## HU-04 · Consultar detalle de un subreddit — 🔜 Pendiente
+## HU-06 · Consultar detalle de un subreddit — 🔜 Pendiente
 
 **Como** usuario autenticado, **quiero** consultar el detalle de un subreddit, **para** ver su información completa.
 
@@ -56,7 +83,7 @@
 
 ---
 
-## HU-05 · Buscar y filtrar subreddits (bonus) — 🔜 Pendiente
+## HU-07 · Buscar y filtrar subreddits (bonus) — 🔜 Pendiente
 
 **Como** usuario autenticado, **quiero** buscar y filtrar los subreddits, **para** encontrar los temas que me interesan más rápido.
 
@@ -65,4 +92,4 @@
 - [ ] `sortBy` acepta únicamente `name | subscribers | createdUtc` (whitelist para evitar inyección SQL).
 - [ ] `order` acepta únicamente `asc | desc`.
 - [ ] `over18` acepta `true | false` para filtrar contenido restringido.
-- [ ] Se combina con la paginación (HU-03).
+- [ ] Se combina con la paginación (HU-05).

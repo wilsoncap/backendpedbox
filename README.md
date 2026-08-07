@@ -27,7 +27,7 @@ src/
 ├── config/validation/         # Validación de variables de entorno
 ├── database/config/           # Configuración de TypeORM + MySQL
 ├── common/                    # Transversales: @Public, interceptor, filtro de errores
-├── auth/                      # Registro de usuarios (entity User + service)
+├── auth/                      # Registro, login y logout (JWT, entity User)
 └── subreddits/                # Ingesta de Reddit, listado y detalle (en desarrollo)
 ```
 
@@ -105,6 +105,8 @@ Cada feature se organiza por capas: `module/`, `controller/`, `service/`, `entit
 | Método | Ruta | Auth | Descripción | Estado |
 |---|---|---|---|---|
 | POST | `/api/auth/register` | — | Crear cuenta | ✅ |
+| POST | `/api/auth/login` | — | Iniciar sesión y obtener JWT | ✅ |
+| POST | `/api/auth/logout` | Bearer | Cerrar sesión (revoca el token) | ✅ |
 | POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json | 🔜 |
 | GET | `/api/subreddits` | Bearer | Listar subreddits paginados | 🔜 |
 | GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | 🔜 |
@@ -153,5 +155,6 @@ npm run test:e2e    # e2e (requiere MySQL arriba)
 ## Notas
 
 - Las credenciales de la BD y el secreto JWT se leen exclusivamente de variables de entorno (`.env`).
-- Los endpoints protegidos requieren `Authorization: Bearer <token>`.
+- Los endpoints protegidos requieren `Authorization: Bearer <token>` (guard JWT global; los públicos usan `@Public()`).
+- El logout revoca el token en memoria (blacklist) hasta su expiración; se pierde al reiniciar el servidor.
 - Las contraseñas nunca se devuelven en las respuestas ni se guardan en texto plano.
