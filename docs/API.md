@@ -146,6 +146,24 @@ Consume `https://www.reddit.com/reddits.json` y hace un **upsert** (inserta nuev
 
 **Ejemplo:** `GET /api/subreddits?page=2&limit=10&search=node&sortBy=subscribers&order=desc`
 
+### Filtros y búsqueda (bonus)
+
+| Filtro | Descripción | Ejemplo |
+|---|---|---|
+| `search` | Búsqueda parcial (LIKE) en `name` y `title` | `?search=node` → `node`, `nodejs`, ... |
+| `sortBy` | Orden por `name`, `subscribers` o `createdUtc` | `?sortBy=subscribers` |
+| `order` | Dirección: `asc` o `desc` | `?order=asc` |
+| `over18` | Solo contenido restringido o no: `true`/`false` | `?over18=true` |
+
+Todos se combinan con la paginación (`page`, `limit`). Ejemplos:
+
+- Buscar y paginar: `GET /api/subreddits?search=java&page=1&limit=10`
+- Los más grandes primero: `GET /api/subreddits?sortBy=subscribers&order=desc&limit=10`
+- Los más recientes: `GET /api/subreddits?sortBy=createdUtc&order=desc&limit=10`
+- Filtrar contenido restringido: `GET /api/subreddits?over18=true`
+
+> `sortBy` acepta **solo** los valores `name`, `subscribers`, `createdUtc` (whitelist). Un valor distinto responde `400 Bad Request`.
+
 **Respuesta 200 OK:**
 ```json
 {
