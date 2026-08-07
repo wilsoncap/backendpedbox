@@ -16,9 +16,9 @@ Todas las respuestas van envueltas en `{ "data": ... }`. Los errores usan la for
 | POST | `/api/auth/register` | — | Crear cuenta | ✅ |
 | POST | `/api/auth/login` | — | Iniciar sesión y obtener JWT | ✅ |
 | POST | `/api/auth/logout` | Bearer | Cerrar sesión (revoca el token) | ✅ |
-| POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json → MySQL | 🔜 |
-| GET | `/api/subreddits` | Bearer | Listar subreddits (paginado/búsqueda) | 🔜 |
-| GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | 🔜 |
+| POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json → MySQL | ✅ |
+| GET | `/api/subreddits` | Bearer | Listar subreddits (paginado/búsqueda) | ✅ |
+| GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | ✅ |
 
 > **Autenticación:** desde la implementación del login, **todos** los endpoints requieren
 > `Authorization: Bearer <token>` salvo los marcados con `—`. Los endpoints públicos
@@ -106,9 +106,11 @@ El token usado queda **revocado** (en memoria) hasta su expiración: si se reuti
 
 ---
 
-## 4. Sincronizar subreddits desde Reddit — 🔜
+## 4. Sincronizar subreddits desde Reddit — ✅
 
 **POST** `/api/subreddits/sync` — requiere `Authorization: Bearer <token>`
+
+Consume `https://www.reddit.com/reddits.json` y hace un **upsert** (inserta nuevos y actualiza existentes). También se ejecuta automáticamente al arrancar la app si la tabla está vacía.
 
 **Respuesta 200 OK:**
 ```json
@@ -120,9 +122,14 @@ El token usado queda **revocado** (en memoria) hasta su expiración: si se reuti
 }
 ```
 
+**Errores:**
+- `401` → sin token
+- `502` → Reddit respondió con error (ej. `Reddit respondió con el estado 403`)
+- `503` → no se pudo conectar con Reddit
+
 ---
 
-## 5. Listar subreddits — 🔜
+## 5. Listar subreddits — ✅
 
 **GET** `/api/subreddits` — requiere `Authorization: Bearer <token>`
 
@@ -166,7 +173,7 @@ El token usado queda **revocado** (en memoria) hasta su expiración: si se reuti
 
 ---
 
-## 6. Detalle de un subreddit — 🔜
+## 6. Detalle de un subreddit — ✅
 
 **GET** `/api/subreddits/:id` — requiere `Authorization: Bearer <token>`
 
