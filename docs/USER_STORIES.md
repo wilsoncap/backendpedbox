@@ -93,3 +93,52 @@
 - [x] `order` acepta únicamente `asc | desc`.
 - [x] `over18` acepta `true | false` para filtrar contenido restringido.
 - [x] Se combina con la paginación (HU-05).
+
+---
+
+## HU-08 · Sincronizar personajes (Rick & Morty) — ✅ Implementado
+
+**Como** usuario autenticado, **quiero** sincronizar los personajes de la API de Rick & Morty, **para** poblar la tabla `characters` en la base de datos.
+
+**Criterios de aceptación:**
+- [x] `POST /api/characters/sync` requiere token JWT; sin token responde `401 Unauthorized`.
+- [x] Consume `https://rickandmortyapi.com/api/character`.
+- [x] Cada sync inserta **10 personajes y avanza** (guarda el progreso por el último `id`).
+- [x] Repitiendo el sync se acumula 10, 20, 30... hasta agotar los 826 personajes de la API.
+- [x] Hace **upsert** (no duplica por `id`) y devuelve `{ inserted, updated }`.
+- [x] Cuando la API ya no tiene más personajes responde `{ inserted: 0, updated: 0 }`.
+- [x] Si la API falla responde un error claro (502/503) sin romper la app.
+
+---
+
+## HU-09 · Listar personajes paginados — ✅ Implementado
+
+**Como** usuario autenticado, **quiero** ver la lista de personajes paginada, **para** navegar entre ellos.
+
+**Criterios de aceptación:**
+- [x] `GET /api/characters?page=1&limit=10` responde `200 OK` (10 por página).
+- [x] La respuesta tiene la forma `{ "data": [...], "meta": { "total", "page", "limit", "totalPages" } }`.
+- [x] Sin token responde `401 Unauthorized`.
+
+---
+
+## HU-10 · Consultar detalle de un personaje — ✅ Implementado
+
+**Como** usuario autenticado, **quiero** consultar el detalle de un personaje, **para** ver su información completa.
+
+**Criterios de aceptación:**
+- [x] `GET /api/characters/:id` responde `200 OK` con `{ "data": { ... } }`.
+- [x] Si no existe (o el id no es numérico) responde `404 Not Found`.
+
+---
+
+## HU-11 · Buscar y filtrar personajes (bonus) — ✅ Implementado
+
+**Como** usuario autenticado, **quiero** buscar y filtrar personajes, **para** encontrar los que me interesan más rápido.
+
+**Criterios de aceptación:**
+- [x] `GET /api/characters?search=rick` busca por coincidencia en `name`.
+- [x] `status`, `species` y `gender` filtran por esos campos.
+- [x] `sortBy` acepta únicamente `name | id | created` (whitelist anti-inyección).
+- [x] `order` acepta únicamente `asc | desc`.
+- [x] Se combina con la paginación (HU-09).

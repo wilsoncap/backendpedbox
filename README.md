@@ -28,7 +28,8 @@ src/
 ├── database/config/           # Configuración de TypeORM + MySQL
 ├── common/                    # Transversales: @Public, interceptor, filtro de errores
 ├── auth/                      # Registro, login y logout (JWT, entity User)
-└── subreddits/                # Ingesta de Reddit, listado paginado y detalle
+├── subreddits/                # Ingesta de Reddit, listado paginado y detalle
+└── characters/                # Ingesta de Rick & Morty, listado paginado y detalle
 ```
 
 Cada feature se organiza por capas: `module/`, `controller/`, `service/`, `entity/`, `dto/`, `test/`.
@@ -81,6 +82,10 @@ Cada feature se organiza por capas: `module/`, `controller/`, `service/`, `entit
 
    REDDIT_JSON_URL=https://www.reddit.com/reddits.json
    REDDIT_USER_AGENT=backendpedbox/1.0 (por /u/wilsoncap)
+
+   RICKMORTY_API_URL=https://rickandmortyapi.com/api/character
+   RICKMORTY_PAGE_SIZE=20
+   RICKMORTY_BATCH_SIZE=10
    ```
    > Si usas una base de datos en la nube, cambia `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` y `DB_NAME` por los de tu proveedor.
 
@@ -116,9 +121,17 @@ curl -X POST http://localhost:3000/api/subreddits/sync \
 # 4. Listar subreddits (paginado, 10 por página)
 curl http://localhost:3000/api/subreddits?page=1&limit=10 \
   -H "Authorization: Bearer <accessToken>"
+
+# 5. Sincronizar personajes desde Rick & Morty (10 por sync; repite para acumular hasta 826)
+curl -X POST http://localhost:3000/api/characters/sync \
+  -H "Authorization: Bearer <accessToken>"
+
+# 6. Listar personajes
+curl http://localhost:3000/api/characters?page=1&limit=10 \
+  -H "Authorization: Bearer <accessToken>"
 ```
 
-> El primer `sync` también ocurre automáticamente al arrancar la app si la tabla `subreddits` está vacía.
+> El primer `sync` también ocurre automáticamente al arrancar la app si la tabla correspondiente está vacía.
 
 ---
 
@@ -145,6 +158,9 @@ curl http://localhost:3000/api/subreddits?page=1&limit=10 \
 | POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json | ✅ |
 | GET | `/api/subreddits` | Bearer | Listar subreddits paginados | ✅ |
 | GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | ✅ |
+| POST | `/api/characters/sync` | Bearer | Sincronizar personajes (Rick & Morty) | ✅ |
+| GET | `/api/characters` | Bearer | Listar personajes paginados | ✅ |
+| GET | `/api/characters/:id` | Bearer | Detalle de un personaje | ✅ |
 
 Guía completa de consumo (ejemplos JSON y Postman): [docs/API.md](docs/API.md)
 
@@ -174,6 +190,20 @@ El esquema se crea automáticamente en desarrollo gracias a `synchronize: true`.
 | `over18` | boolean | — |
 | `createdUtc` | bigint | — |
 | `iconImg` / `bannerImg` | text | — |
+| `fetchedAt` | datetime | Última sincronización |
+
+**Tabla `characters`** (✅):
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | int | Clave primaria |
+| `name` | varchar | — |
+| `status` | varchar | `Alive` · `Dead` · `unknown` |
+| `species` | varchar | — |
+| `type` | varchar | — |
+| `gender` | varchar | — |
+| `originName` / `locationName` | varchar | Aplanado desde la API |
+| `image` / `url` | text | — |
+| `created` | datetime | Fecha de creación (API) |
 | `fetchedAt` | datetime | Última sincronización |
 
 ---

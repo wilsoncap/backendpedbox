@@ -19,6 +19,9 @@ Todas las respuestas van envueltas en `{ "data": ... }`. Los errores usan la for
 | POST | `/api/subreddits/sync` | Bearer | Sincronizar reddits.json → MySQL | ✅ |
 | GET | `/api/subreddits` | Bearer | Listar subreddits (paginado/búsqueda) | ✅ |
 | GET | `/api/subreddits/:id` | Bearer | Detalle de un subreddit | ✅ |
+| POST | `/api/characters/sync` | Bearer | Sincronizar personajes (Rick & Morty) | ✅ |
+| GET | `/api/characters` | Bearer | Listar personajes (paginado/filtros) | ✅ |
+| GET | `/api/characters/:id` | Bearer | Detalle de un personaje | ✅ |
 
 > **Autenticación:** desde la implementación del login, **todos** los endpoints requieren
 > `Authorization: Bearer <token>` salvo los marcados con `—`. Los endpoints públicos
@@ -218,6 +221,79 @@ Todos se combinan con la paginación (`page`, `limit`). Ejemplos:
 ```
 
 **Errores:** `404` → no existe
+
+---
+
+## 7. Personajes (Rick & Morty) — ✅
+
+Segundo feature de ingesta, espejo de `subreddits` pero consumiendo `https://rickandmortyapi.com/api/character`.
+
+### 7.1 Sincronizar personajes
+
+**POST** `/api/characters/sync` — requiere `Authorization: Bearer <token>`
+
+Cada llamado inserta **10 personajes nuevos y avanza** (guarda el progreso por el último `id`): la primera llamada inserta los ids 1–10, la segunda los 11–20, y así **hasta agotar los 826 personajes de la API**. Cuando ya no quedan más responde `{ inserted: 0, updated: 0 }`. Hace **upsert**. Tamaño configurable con `RICKMORTY_BATCH_SIZE` (por defecto 10).
+
+**Respuesta 200 OK:**
+```json
+{
+  "data": { "inserted": 10, "updated": 0 }
+}
+```
+
+**Errores:** `401` sin token · `502` la API respondió con error · `503` no se pudo conectar
+
+### 7.2 Listar personajes
+
+**GET** `/api/characters` — requiere `Authorization: Bearer <token>`
+
+**Query params (opcionales):**
+
+| Param | Tipo | Default | Descripción |
+|---|---|---|---|
+| `page` | int ≥ 1 | 1 | Página actual |
+| `limit` | int 1–100 | 10 | Elementos por página |
+| `search` | string | — | Busca por coincidencia en `name` |
+| `status` | string | — | `Alive` · `Dead` · `unknown` |
+| `species` | string | — | `Human` · `Alien` · ... |
+| `gender` | string | — | `Male` · `Female` · `unknown` |
+| `sortBy` | enum | `id` | `name` · `id` · `created` |
+| `order` | enum | `desc` | `asc` · `desc` |
+
+**Ejemplo:** `GET /api/characters?search=rick&status=Alive&page=1&limit=10`
+
+**Respuesta 200 OK:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Rick Sanchez",
+      "status": "Alive",
+      "species": "Human",
+      "type": "",
+      "gender": "Male",
+      "originName": "Earth (C-137)",
+      "locationName": "Citadel of Ricks",
+      "image": ".../avatar/1.jpeg",
+      "url": ".../character/1",
+      "created": "2017-11-04T18:48:46.000Z",
+      "fetchedAt": "2026-08-08T04:28:58.000Z"
+    }
+  ],
+  "meta": { "total": 50, "page": 1, "limit": 10, "totalPages": 5 }
+}
+```
+
+### 7.3 Detalle de un personaje
+
+**GET** `/api/characters/:id` — requiere `Authorization: Bearer <token>`
+
+**Ejemplo:** `GET /api/characters/1`
+
+**Respuesta 200 OK:** el objeto del personaje completo (como en la lista).
+
+**Errores:** `404` → no existe (o id no numérico)
 
 ---
 
