@@ -336,3 +336,5 @@ Cada llamado inserta **10 personajes nuevos y avanza** (guarda el progreso por e
 
 ### Consejo
 Ejecuta siempre **primero el Login** (Register → Login) para que `{{token}}` esté poblado antes de llamar a los endpoints protegidos.
+
+---
