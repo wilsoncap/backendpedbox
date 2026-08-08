@@ -59,6 +59,22 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   REDDIT_USER_AGENT?: string;
+
+  @IsOptional()
+  @IsString()
+  RICKMORTY_API_URL?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  RICKMORTY_PAGE_SIZE?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  RICKMORTY_BATCH_SIZE?: number;
 }
 
 export function validate(config: Record<string, unknown>) {
