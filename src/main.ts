@@ -1,4 +1,8 @@
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  ClassSerializerInterceptor,
+  ValidationPipe,
+} from '@nestjs/common';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -16,6 +20,14 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      exceptionFactory: (errors) => {
+        const messages = errors.map((error) => {
+          const constraints = Object.values(error.constraints ?? {});
+          return `${error.property}: ${constraints.join(', ')}`;
+        });
+
+        return new BadRequestException(messages.join('; '));
+      },
     }),
   );
   app.useGlobalInterceptors(

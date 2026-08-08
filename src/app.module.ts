@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/module/auth.module';
+import { CharactersModule } from './characters/module/characters.module';
 import { validate } from './config/validation/env.validation';
 import { typeOrmConfig } from './database/config/typeorm.config';
 import { SubredditsModule } from './subreddits/module/subreddits.module';
@@ -17,6 +18,7 @@ import { SubredditsModule } from './subreddits/module/subreddits.module';
     }),
     AuthModule,
     SubredditsModule,
+    CharactersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
